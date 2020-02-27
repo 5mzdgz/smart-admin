@@ -59,6 +59,7 @@
 </template>
 <script>
 import bus from '../common/bus';
+import { mapState, mapGetters, mapActions, mapMutations } from "vuex";
 export default {
     data() {
         return {
@@ -80,10 +81,13 @@ export default {
         };
     },
     computed: {
+        // ...mapState({
+        //     userData: 'userData'
+        // }),
         username() {
             let username = localStorage.getItem('ms_username');
             return username ? username : this.name;
-        }
+        },
     },
     methods: {
         // 用户名下拉菜单选择事件

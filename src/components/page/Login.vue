@@ -3,7 +3,7 @@
         <div class="ms-login">
             <div class="ms-title">后台管理系统</div>
             <el-form :model="param" :rules="rules" ref="login" label-width="0px" class="ms-content">
-                <el-form-item prop="username">
+                <!-- <el-form-item prop="username">
                     <el-select v-model="param.userType" placeholder="请选择">
                         <el-option
                             v-for="item in options"
@@ -12,7 +12,7 @@
                             :value="item.value"
                         ></el-option>
                     </el-select>
-                </el-form-item>
+                </el-form-item> -->
                 <el-form-item prop="username">
                     <el-input v-model="param.username" placeholder="请输入用户名">
                         <el-button slot="prepend" icon="el-icon-lx-people"></el-button>
@@ -41,10 +41,10 @@
                 <div class="login-btn">
                     <el-button type="primary" @click="submitForm()">{{resigeter?'注册':'登录'}}</el-button>
                 </div>
-                <div class="login-tips">
+                <!-- <div class="login-tips">
                     <span>忘记密码</span>
                     <span class="resigeter" @click="resigeter = !resigeter">{{resigeter?'登录':'注册'}}</span>
-                </div>
+                </div> -->
             </el-form>
         </div>
     </div>
@@ -53,6 +53,7 @@
 <script>
 import { resigeterData, loginData } from '@/api/index';
 import CryptoJS from 'crypto-js';
+import md5 from 'js-md5';
 export default {
     data() {
         var validatePass = (rule, value, callback) => {
@@ -128,7 +129,9 @@ export default {
         submitForm() {
             this.$refs.login.validate(valid => {
                 if (valid) {
-                    const password = this.jiaMi(this.param.password);
+                    // const password = this.jiaMi(this.param.password);
+                    console.log(this.param.password)
+                    const password = md5(this.param.password).toUpperCase();
                     this.param.loginResgsiterPassword = password;
                     if (this.resigeter) {
                         resigeterData(this.param).then(res => {
@@ -143,8 +146,7 @@ export default {
                         loginData(this.param).then(res => {
                             console.log(res);
                             if (res.code === 200) {
-                                this.$message.success('登录成功');
-                                localStorage.setItem('ms_username', this.param.username);
+                                this.$store.dispatch('token', res.token)
                                 this.$router.push('/');
                             }
                         })

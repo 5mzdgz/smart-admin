@@ -51,6 +51,7 @@
 
 <script>
 import bus from '../common/bus';
+import { userData } from '@/api/index';
 export default {
     data() {
         return {
@@ -60,6 +61,12 @@ export default {
                     icon: 'el-icon-lx-home',
                     index: 'dashboard',
                     title: '概述首页'
+                },
+                {
+                    icon: 'el-icon-lx-home',
+                    index: 'dashboard',
+                    title: '用户管理',
+                    userType: 4
                 },
                 {
                     icon: 'el-icon-lx-cascades',
@@ -73,6 +80,10 @@ export default {
                         {
                             index: 'owner',
                             title: '业主管理',
+                        },
+                        {
+                            index: 'authentication',
+                            title: '房屋认证'
                         }
                     ]
                 },
@@ -164,6 +175,26 @@ export default {
             this.collapse = msg;
             bus.$emit('collapse-content', msg);
         });
+        this.getUserData();
+    },
+    methods: {
+        getUserData() {
+            userData().then(res => {
+                if (res.code === 200) {
+                    this.$store.dispatch('userData', res.data)
+                    this.getAuthNav(res.data)
+                }
+                console.log(res)
+            })
+        },
+        getAuthNav(userData) {
+            console.log('用户信息', this.userData)
+            
+            if (userData.userType === '4') {
+                const  navData = this.items.filter(item => item.userType !='4');
+                this.items = navData;
+            }
+        }
     }
 };
 </script>

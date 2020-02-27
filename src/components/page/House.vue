@@ -67,24 +67,25 @@
                 @selection-change="handleSelectionChange"
             >
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
-                <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
-                <el-table-column label="所在房屋" align="center"></el-table-column>
-                <el-table-column label="户型" align="center">
-                    <template slot-scope="scope">￥{{scope.row.money}}</template>
+                <el-table-column prop="houseId" label="ID" width="55" align="center"></el-table-column>
+                <el-table-column label="区域" prop="areaName" align="center"></el-table-column>
+                <el-table-column label="楼栋" prop="tungs" align="center"></el-table-column>
+                <el-table-column label="单元" prop="units" align="center"></el-table-column>
+                <el-table-column label="房号" prop="houseNum" align="center"></el-table-column>
+                <el-table-column label="户型" prop="househx" align="center">
+                    <!-- <template slot-scope="scope">￥{{scope.row.money}}</template> -->
                 </el-table-column>
-                <el-table-column label="房屋面积" align="center"></el-table-column>
+                <el-table-column label="房屋面积" prop="houseSquare" align="center"></el-table-column>
                 <el-table-column prop="name" label="业主" align="center"></el-table-column>
-                <el-table-column label="住户身份" align="center"></el-table-column>
+                <el-table-column prop="createTime" label="添加时间" align="center"></el-table-column>
                 <el-table-column label="状态" align="center">
                     <template slot-scope="scope">
                         <el-tag
-                            :type="scope.row.state==='已认证'?'success':(scope.row.state==='未认证'?'danger':'')"
-                        >{{scope.row.state}}</el-tag>
+                            :type="scope.row.authStatus==='1'?'success':(scope.row.authStatus!='1'?'danger':'')"
+                        >{{scope.row.authStatus === '1' ? '未认证' : '待认证'}}</el-tag>
                     </template>
                 </el-table-column>
-
-                <el-table-column prop="date" label="添加时间" align="center"></el-table-column>
-                <el-table-column prop="date" label="备注" align="center"></el-table-column>
+                <el-table-column prop="marks" label="备注" align="center"></el-table-column>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
                         <el-select
@@ -133,6 +134,7 @@
 </template>
 
 <script>
+import { houseList } from '@/api/index';
 import { fetchData } from '../../api/index';
 export default {
     name: 'basetable',
@@ -250,6 +252,7 @@ export default {
     },
     created() {
         this.getData();
+        this.getHuoseList();
     },
     mounted() {
         this.tableData.forEach(item => {
@@ -257,6 +260,21 @@ export default {
         });
     },
     methods: {
+        //获取房子列表
+        getHuoseList() {
+            houseList().then(res => {
+                console.log(res)
+                res.data.records.forEach(item => {
+                    const identityItem = item.housePeopleEntity.filter(i => i.identity === 1)
+                    if (identityItem.length > 0) {
+                        item.identity = identityItem[0].identity
+                        item.name = identityItem[0].name
+                        item.authStatus = identityItem[0].status
+                    }
+                })
+                this.tableData  = res.data.records
+            })
+        },
         // 下拉框的选择 可以打印看
         changeSelect(id) {
             console.log(id, this.state[id]);
