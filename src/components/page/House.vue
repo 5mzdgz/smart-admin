@@ -43,7 +43,12 @@
                     </el-dropdown>
                 </el-col>
                 <el-col :span="7" class="from-right-box">
-                    <el-button type="primary" icon="el-icon-plus" class="top-select">添加</el-button>
+                    <el-button
+                        type="primary"
+                        icon="el-icon-plus"
+                        class="top-select"
+                        @click="addProject"
+                    >添加</el-button>
                     <el-button type="primary" class="top-select">导入数据</el-button>
                 </el-col>
             </el-row>
@@ -117,27 +122,39 @@
 
         <!-- 编辑弹出框 -->
         <el-dialog title="编辑" :visible.sync="editVisible" width="30%">
-            <el-form ref="form" :model="form" label-width="70px">
-                <el-form-item label="用户名">
-                    <el-input v-model="form.name"></el-input>
+            <el-form ref="form" :rules="rules" :model="param" label-width="90px">
+                <el-form-item label="小区" prop="areaName">
+                    <el-input v-model="param.areaName" @keyup.enter.native="saveEdit()"></el-input>
                 </el-form-item>
-                <el-form-item label="地址">
-                    <el-input v-model="form.address"></el-input>
+                <el-form-item label="楼栋" prop="tungs">
+                    <el-input v-model="param.tungs" @keyup.enter.native="saveEdit()"></el-input>
                 </el-form-item>
+                <el-form-item label="单元" prop="units">
+                    <el-input v-model="param.units" @keyup.enter.native="saveEdit()"></el-input>
+                </el-form-item>
+                <el-form-item label="房号" prop="houseNum">
+                    <el-input v-model="param.houseNum" @keyup.enter.native="saveEdit()"></el-input>
+                </el-form-item>
+                <el-form-item label="房屋面积" prop="houseSquare">
+                    <el-input v-model="param.houseSquare" @keyup.enter.native="saveEdit()"></el-input>
+                </el-form-item>
+                <el-form-item label="户型" prop="househx">
+                    <el-input v-model="param.househx" @keyup.enter.native="saveEdit()"></el-input>
+                </el-form-item>
+                <!-- <span slot="footer" class="dialog-footer"> -->
+                    <el-button @click="editVisible = false">取 消</el-button>
+                    <el-button type="primary" @click="saveEdit()">确 定</el-button>
+                <!-- </span> -->
             </el-form>
-            <span slot="footer" class="dialog-footer">
-                <el-button @click="editVisible = false">取 消</el-button>
-                <el-button type="primary" @click="saveEdit">确 定</el-button>
-            </span>
         </el-dialog>
     </div>
 </template>
 
 <script>
-import { houseList } from '@/api/index';
+import { houseList, addHouse } from '@/api/index';
 import { fetchData } from '../../api/index';
 export default {
-    name: 'basetable',
+    name: 'house',
     data() {
         return {
             query: {
@@ -247,7 +264,24 @@ export default {
             number: '',
             username: '',
             userPhone: '',
-            state: {}
+            state: {},
+            param: {
+                areaId: '14',
+                areaName: '',
+                tungs: '',
+                units: '',
+                houseNum: '',
+                houseSquare: '',
+                househx: ''
+            },
+            rules: {
+                areaName: [{ required: true, message: '请输入小区名称', trigger: 'blur' }],
+                tungs: [{ required: true, message: '请输入楼栋', trigger: 'blur' }],
+                units: [{ required: true, message: '请输入单元', trigger: 'blur' }],
+                houseNum: [{ required: true, message: '请输入房号', trigger: 'blur' }],
+                houseSquare: [{ required: true, message: '请输入房屋面积', trigger: 'blur' }],
+                househx: [{ required: true, message: '请输入户型', trigger: 'blur' }]
+            }
         };
     },
     created() {
@@ -263,17 +297,17 @@ export default {
         //获取房子列表
         getHuoseList() {
             houseList().then(res => {
-                console.log(res)
+                console.log(res);
                 res.data.records.forEach(item => {
-                    const identityItem = item.housePeopleEntity.filter(i => i.identity === 1)
+                    const identityItem = item.housePeopleEntity.filter(i => i.identity === 1);
                     if (identityItem.length > 0) {
-                        item.identity = identityItem[0].identity
-                        item.name = identityItem[0].name
-                        item.authStatus = identityItem[0].status
+                        item.identity = identityItem[0].identity;
+                        item.name = identityItem[0].name;
+                        item.authStatus = identityItem[0].status;
                     }
-                })
-                this.tableData  = res.data.records
-            })
+                });
+                this.tableData = res.data.records;
+            });
         },
         // 下拉框的选择 可以打印看
         changeSelect(id) {
@@ -318,6 +352,10 @@ export default {
             this.$message.error(`删除了${str}`);
             this.multipleSelection = [];
         },
+        //添加弹窗
+        addProject() {
+            this.editVisible = true;
+        },
         // 编辑操作
         handleEdit(index, row) {
             this.idx = index;
@@ -326,9 +364,14 @@ export default {
         },
         // 保存编辑
         saveEdit() {
-            this.editVisible = false;
-            this.$message.success(`修改第 ${this.idx + 1} 行成功`);
-            this.$set(this.tableData, this.idx, this.form);
+            this.$refs.form.validate(valid => {
+                if (valid) {
+                    console.log(this.param)
+                    addHouse(this.param).then(res => {
+                        console.log(res)
+                    })
+                }
+            });
         },
         // 分页导航
         handlePageChange(val) {

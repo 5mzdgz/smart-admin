@@ -49,3 +49,19 @@ export const houseList = query => {
         }
     });
 };
+
+export const addHouse = query => {
+    return request({
+        url: '/area/addHouse',
+        method: 'post',
+        data: {
+            areaId: query.areaId,
+            areaName: query.areaName,
+            tungs: query.tungs,
+            units: query.units,
+            houseNum: query.houseNum,
+            houseSquare: query.houseSquare,
+            househx: query.househx
+        }
+    });
+};
