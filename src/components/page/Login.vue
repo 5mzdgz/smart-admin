@@ -146,7 +146,8 @@ export default {
                         loginData(this.param).then(res => {
                             console.log(res);
                             if (res.code === 200) {
-                                this.$store.dispatch('token', res.token)
+                                sessionStorage.setItem('token', res.token)
+                                this.$store.dispatch('token', res.token);
                                 this.$router.push('/');
                             }
                         })

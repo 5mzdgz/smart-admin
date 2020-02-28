@@ -136,8 +136,8 @@ Vue.use(Router);
 //使用钩子函数对路由进行权限跳转
 router.beforeEach((to, from, next) => {
     document.title = `${to.meta.title} | 物业后台管理系统`;
-    const token = Store.state.token;
-    if (!token && to.path !== '/login') {
+    const token = sessionStorage.getItem('token');
+    if (!token) {
         next('/login');
     // } else if (to.meta.permission) {
     //     // 如果是管理员权限则可进入，这里只是简单的模拟管理员权限而已

@@ -285,7 +285,6 @@ export default {
         };
     },
     created() {
-        this.getData();
         this.getHuoseList();
     },
     mounted() {
@@ -312,14 +311,6 @@ export default {
         // 下拉框的选择 可以打印看
         changeSelect(id) {
             console.log(id, this.state[id]);
-        },
-        // 获取 easy-mock 的模拟数据
-        getData() {
-            fetchData(this.query).then(res => {
-                console.log(res);
-                this.tableData = res.list;
-                this.pageTotal = res.pageTotal || 50;
-            });
         },
         // 触发搜索按钮
         handleSearch() {
@@ -369,6 +360,7 @@ export default {
                     console.log(this.param)
                     addHouse(this.param).then(res => {
                         console.log(res)
+                        this.editVisible = false
                     })
                 }
             });

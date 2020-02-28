@@ -43,7 +43,12 @@
                     </el-dropdown>
                 </el-col>
                 <el-col :span="7" class="from-right-box">
-                    <el-button type="primary" icon="el-icon-plus" class="top-select">添加</el-button>
+                    <el-button
+                        type="primary"
+                        icon="el-icon-plus"
+                        class="top-select"
+                        @click="addProject"
+                    >添加</el-button>
                     <el-button type="primary" class="top-select">导入数据</el-button>
                 </el-col>
             </el-row>
@@ -67,24 +72,17 @@
                 @selection-change="handleSelectionChange"
             >
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
-                <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
-                <el-table-column label="所在房屋" align="center"></el-table-column>
-                <el-table-column label="户型" align="center">
-                    <template slot-scope="scope">￥{{scope.row.money}}</template>
-                </el-table-column>
-                <el-table-column label="房屋面积" align="center"></el-table-column>
-                <el-table-column prop="name" label="业主" align="center"></el-table-column>
-                <el-table-column label="住户身份" align="center"></el-table-column>
-                <el-table-column label="状态" align="center">
+                <el-table-column prop="peopleId" label="ID" width="55" align="center"></el-table-column>
+                <el-table-column prop="name" label="姓名" align="center"></el-table-column>
+                <el-table-column prop="phone" label="电话号码" align="center"></el-table-column>
+                <el-table-column label="住户身份" align="center">
                     <template slot-scope="scope">
-                        <el-tag
-                            :type="scope.row.state==='已认证'?'success':(scope.row.state==='未认证'?'danger':'')"
-                        >{{scope.row.state}}</el-tag>
+                        {{scope.row.identity > 1 ? '住户':'业主'}}
                     </template>
                 </el-table-column>
-
-                <el-table-column prop="date" label="添加时间" align="center"></el-table-column>
-                <el-table-column prop="date" label="备注" align="center"></el-table-column>
+                <el-table-column label="所在房屋" align="center"></el-table-column>
+                <el-table-column prop="createTime" label="添加时间" align="center"></el-table-column>
+                <el-table-column prop="marks" label="备注" align="center"></el-table-column>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
                         <el-button
@@ -115,24 +113,27 @@
 
         <!-- 编辑弹出框 -->
         <el-dialog title="编辑" :visible.sync="editVisible" width="30%">
-            <el-form ref="form" :model="form" label-width="70px">
-                <el-form-item label="用户名">
-                    <el-input v-model="form.name"></el-input>
+            <el-form ref="form" :rules="rules" :model="param" label-width="90px">
+                <el-form-item label="小区" prop="areaName">
+                    <el-input v-model="param.areaName" @keyup.enter.native="saveEdit()"></el-input>
                 </el-form-item>
-                <el-form-item label="地址">
-                    <el-input v-model="form.address"></el-input>
+                <el-form-item label="家属/业主" prop="name">
+                    <el-input v-model="param.name" @keyup.enter.native="saveEdit()"></el-input>
                 </el-form-item>
-            </el-form>
-            <span slot="footer" class="dialog-footer">
+                <el-form-item label="房号" prop="houseId">
+                    <el-input v-model="param.houseId" @keyup.enter.native="saveEdit()"></el-input>
+                </el-form-item>
+                <!-- <span slot="footer" class="dialog-footer"> -->
                 <el-button @click="editVisible = false">取 消</el-button>
-                <el-button type="primary" @click="saveEdit">确 定</el-button>
-            </span>
+                <el-button type="primary" @click="saveEdit()">确 定</el-button>
+                <!-- </span> -->
+            </el-form>
         </el-dialog>
     </div>
 </template>
 
 <script>
-import { fetchData } from '../../api/index';
+import { fetchData , addPeople, peopleList} from '@/api/index';
 export default {
     name: 'basetable',
     data() {
@@ -221,28 +222,37 @@ export default {
             unit: '',
             number: '',
             username: '',
-            userPhone: ''
+            userPhone: '',
+            param: {
+                areaId: '14',
+                areaName: '',
+                name: '',
+                houseId: '6',
+                identity: '1'
+            },
+            rules: {
+                areaName: [{ required: true, message: '请输入小区名称', trigger: 'blur' }],
+                name: [{ required: true, message: '请输入业主姓名', trigger: 'blur' }],
+                houseId: [{ required: true, message: '请输入房号', trigger: 'blur' }],
+                identity: [{ required: true, message: '请输入业主', trigger: 'blur' }],
+                areaId: [{ required: true, message: '请输入小区', trigger: 'blur' }]
+            }
         };
     },
     created() {
-        this.getData();
+        this.getPeopleList()
     },
-    mounted() {
-        
-    },
+    mounted() {},
     methods: {
-        // 获取 easy-mock 的模拟数据
-        getData() {
-            fetchData(this.query).then(res => {
-                console.log(res);
-                this.tableData = res.list;
-                this.pageTotal = res.pageTotal || 50;
-            });
+        getPeopleList() {
+            peopleList().then(res => {
+                console.log(res)
+                this.tableData = res.data.records
+            })
         },
         // 触发搜索按钮
         handleSearch() {
             this.$set(this.query, 'pageIndex', 1);
-            this.getData();
         },
         // 删除操作
         handleDelete(index, row) {
@@ -270,6 +280,10 @@ export default {
             this.$message.error(`删除了${str}`);
             this.multipleSelection = [];
         },
+        //添加弹窗
+        addProject() {
+            this.editVisible = true;
+        },
         // 编辑操作
         handleEdit(index, row) {
             this.idx = index;
@@ -278,9 +292,15 @@ export default {
         },
         // 保存编辑
         saveEdit() {
-            this.editVisible = false;
-            this.$message.success(`修改第 ${this.idx + 1} 行成功`);
-            this.$set(this.tableData, this.idx, this.form);
+            this.$refs.form.validate(valid => {
+                if (valid) {
+                    console.log(this.param)
+                    addPeople(this.param).then(res => {
+                        console.log(res)
+                        this.editVisible = false
+                    })
+                }
+            });
         },
         // 分页导航
         handlePageChange(val) {

@@ -65,3 +65,28 @@ export const addHouse = query => {
         }
     });
 };
+
+export const addPeople = query => {
+    return request({
+        url: '/area/addPeople',
+        method: 'post',
+        data: {
+            areaId: query.areaId,
+            name: query.name,
+            houseId: query.houseId,
+            identity: query.identity
+        }
+    });
+};
+
+export const peopleList = () => {
+    return request({
+        url: '/area/getpeopleList',
+        method: 'post',
+        data: {
+            page: 1,
+            pageSize: 10,
+            areaId: 14
+        }
+    });
+};

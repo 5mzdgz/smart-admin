@@ -1,5 +1,6 @@
 import axios from 'axios';
 import Store from '@/store'
+import { nextTick } from 'q';
 
 const service = axios.create({
     // process.env.NODE_ENV === 'development' 来判断是否开发环境
@@ -24,6 +25,9 @@ service.interceptors.response.use(
     response => {
         console.log(response)
         if (response.status === 200) {
+            if(response.data.code === 401) {
+                next('/login');
+            }
             return response.data;
         } else {
             Promise.reject();
