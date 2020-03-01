@@ -19,78 +19,78 @@ Vue.use(Router);
                 {
                     path: '/dashboard',
                     component: () => import(/* webpackChunkName: "dashboard" */ '../components/page/Dashboard.vue'),
-                    meta: { title: '系统首页' }
+                    meta: { title: '系统首页', need_login: true }
                 },
                 {
                     path: '/finance',
                     component: () => import(/* webpackChunkName: "finance" */ '../components/page/Finance.vue'),
-                    meta: { title: '财务管理' }
+                    meta: { title: '财务管理', need_login: true }
                 },
                 {
                     path: '/house',
                     component: () => import(/* webpackChunkName: "house" */ '../components/page/House.vue'),
-                    meta: { title: '房屋管理' }
+                    meta: { title: '房屋管理', need_login: true }
                 },
                 {
                     path: '/owner',
                     component: () => import(/* webpackChunkName: "owner" */ '../components/page/Owner.vue'),
-                    meta: { title: '业主管理' }
+                    meta: { title: '业主管理', need_login: true }
                 },
                 {
                     path: '/charge',
                     component: () => import(/* webpackChunkName: "charge" */ '../components/page/Charge.vue'),
-                    meta: { title: '收费管理' }
+                    meta: { title: '收费管理', need_login: true }
                 },
                 {
                     path: '/unpaid',
                     component: () => import(/* webpackChunkName: "unpaid" */ '../components/page/Unpaid.vue'),
-                    meta: { title: '未缴费账单' }
+                    meta: { title: '未缴费账单', need_login: true }
                 },
                 {
                     path: '/meterReading',
                     component: () => import(/* webpackChunkName: "meterReading" */ '../components/page/MeterReading.vue'),
-                    meta: { title: '抄表录入' }
+                    meta: { title: '抄表录入', need_login: true }
                 },
                 {
                     path: '/generateBills',
                     component: () => import(/* webpackChunkName: "generateBills" */ '../components/page/GenerateBills.vue'),
-                    meta: { title: '生成账单' }
+                    meta: { title: '生成账单', need_login: true }
                 },
                 {
                     // 富文本编辑器组件
                     path: '/editor',
                     component: () => import(/* webpackChunkName: "editor" */ '../components/page/VueEditor.vue'),
-                    meta: { title: '富文本编辑器' }
+                    meta: { title: '富文本编辑器', need_login: true }
                 },
                 {
                     // markdown组件
                     path: '/markdown',
                     component: () => import(/* webpackChunkName: "markdown" */ '../components/page/Markdown.vue'),
-                    meta: { title: 'markdown编辑器' }
+                    meta: { title: 'markdown编辑器', need_login: true }
                 },
                 {
                     // 图片上传组件
                     path: '/upload',
                     component: () => import(/* webpackChunkName: "upload" */ '../components/page/Upload.vue'),
-                    meta: { title: '文件上传' }
+                    meta: { title: '文件上传', need_login: true }
                 },
                 {
                     // vue-schart组件
                     path: '/enterprise',
                     component: () => import(/* webpackChunkName: "enterprise" */ '../components/page/BaseCharts.vue'),
-                    meta: { title: 'schart图表' }
+                    meta: { title: 'schart图表', need_login: true }
                 },
                 {
                     // 拖拽列表组件
                     path: '/drag',
                     component: () => import(/* webpackChunkName: "drag" */ '../components/page/DragList.vue'),
-                    meta: { title: '拖拽列表' }
+                    meta: { title: '拖拽列表', need_login: true }
                 },
                 {
                     // 拖拽Dialog组件
                     path: '/dialog',
                     component: () => import(/* webpackChunkName: "dragdialog" */ '../components/page/DragDialog.vue'),
-                    meta: { title: '拖拽弹框' }
+                    meta: { title: '拖拽弹框', need_login: true }
                 },
                 {
                     // 国际化组件
@@ -136,14 +136,22 @@ Vue.use(Router);
 //使用钩子函数对路由进行权限跳转
 router.beforeEach((to, from, next) => {
     document.title = `${to.meta.title} | 物业后台管理系统`;
-    const token = sessionStorage.getItem('token');
-    if (!token) {
-        next('/login');
-    // } else if (to.meta.permission) {
-    //     // 如果是管理员权限则可进入，这里只是简单的模拟管理员权限而已
-    //     role === 'admin' ? next() : next('/403');
+    let token = sessionStorage.getItem('token');
+    if (to.meta.need_login) {
+        if (!token) {
+            next('/login');
+        } else {
+            // 简单的判断IE10及以下不进入富文本编辑器，该组件不兼容
+            if (navigator.userAgent.indexOf('MSIE') > -1 && to.path === '/editor') {
+                Vue.prototype.$alert('vue-quill-editor组件不兼容IE10及以下浏览器，请使用更高版本的浏览器查看', '浏览器不兼容通知', {
+                    confirmButtonText: '确定'
+                });
+            } else {
+                console.log(token)
+                next();
+            }
+        }
     } else {
-        // 简单的判断IE10及以下不进入富文本编辑器，该组件不兼容
         if (navigator.userAgent.indexOf('MSIE') > -1 && to.path === '/editor') {
             Vue.prototype.$alert('vue-quill-editor组件不兼容IE10及以下浏览器，请使用更高版本的浏览器查看', '浏览器不兼容通知', {
                 confirmButtonText: '确定'
